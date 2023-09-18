@@ -1,65 +1,53 @@
 from abc import ABC, abstractmethod
+from reseauxConceptuelsSimple import AbcReseauConceptuelSimple
 
-class AbcReseauConceptuel(ABC) :
+class AbcReseauConceptuel(AbcReseauConceptuelSimple) :
     '''
-    Classe de base pour les réseaux conceptuels
+    Classe de base abstraite pour les réseaux conceptuels plus complets
 
     Un réseau conceptuel est un réseau dont les arcs sont décrit par un noeud
-    En simplifié c'est une liste de triplet (origine, moyen, destination) décrivant les arrêtes entre les noeuds
+    En simplifié c'est une liste de triplet (origine, moyen, destination) ou autrement dit (objet, prédicat, valeur) décrivant les arrêtes entre les noeuds
     (un peu comme RDF mais avec la différence que les moyens (prédicats) sont des noeuds et les relations sont ordonnées au sein de (origine, moyen))
+
+    Ces réseaux sont plus complets et peuvent récupérer les liste de relation par objet, mais aussi par prédicat ou valeur
     '''
 
-    def __init__(self):
-        super().__init__()
-
     @abstractmethod
-    def addRelation(self, fro, by, to):
+    def get_relations_of_predicat(self, by):
         '''
-        Ajoute une relation au graphe à la fin de l'ordre
+        Donne l'ensemble des doublés (objet, destination) du noeud donné en paramètre
+        Renvois 'KeyError' si le noeuds origine n'existe pas
 
-        :param fro: id du noeud origine
-        :type fro: entier
-        :param by: id du noeud moyen
+        :param by: id du noeud origine
         :type by: entier
-        :param to: id du noeud destination
-        :type to: entier
-        '''
-        pass
-        
-    @abstractmethod
-    def getRelationsOf(self, fro):
-        '''
-        Donne l'ensemble des doublés (moyen, destination) du noeud donné en paramètre
-        Renvois ''KeyError'' si le noeuds oringine n'existe pas
-
-        :param fro: id du noeud origine
-        :type fro: entier
-        :return: liste de doublé (moyen, [destinations])
+        :return: liste de doublé (objets, destinations)
         :rtype: iterable of tuple
         '''
-        pass
-
+        raise NotImplementedError
+    
     @abstractmethod
-    def removeFirstRelation(self, fro, by, to):
+    def get_relations_of_value(self, to):
         '''
-        Retire la dernière relation donnée en paramètre
-        Renvois ''KeyError'' si la relation n'existe pas
+        Donne l'ensemble des doublés (objet, moyen) du noeud donné en paramètre
+        Renvois 'KeyError' si le noeuds origine n'existe pas
 
-        :param fro: id du noeud origine
-        :type fro: entier
-        :param by: id du noeud moyen
-        :type by: entier
-        :param to: id du noeud destination
+        :param to: id du noeud origine
         :type to: entier
+        :return: liste de doublé (objets, moyen)
+        :rtype: iterable of tuple
         '''
-        pass
+        raise NotImplementedError
+    
+    #TODO
+    #add method for retreive list of id from a double like (from,by), (from,to) or (by,to)
         
 class SimpleReseauConceptuel(AbcReseauConceptuel) :
+    '''Implémentation simple de la classe abstraite avec des objets standard de python'''
 
     def __init__(self):
         self.data = dict()
         
-    def addRelation(self, fro, by, to):
+    def add_relation(self, fro, by, to):
         '''
         Ajoute une relation au graphe à la fin de l'ordre
 
@@ -76,10 +64,10 @@ class SimpleReseauConceptuel(AbcReseauConceptuel) :
         a[by] = b
         self.data[fro] = a
         
-    def getRelationsOf(self, fro):
+    def get_relationsOf(self, fro):
         '''
         Donne l'ensemble des doublés (moyen, destination) du noeud donné en paramètre
-        Renvois ''KeyError'' si le noeuds oringine n'existe pas
+        Renvois 'KeyError' si le noeuds oringine n'existe pas
 
         :param fro: id du noeud origine
         :type fro: entier
@@ -89,10 +77,10 @@ class SimpleReseauConceptuel(AbcReseauConceptuel) :
         return [ (b[0], b[1].copy()) for b in self.data[fro].items()]
 
 
-    def removeFirstRelation(self, fro, by, to):
+    def remove_first_relation(self, fro, by, to):
         '''
         Retire la dernière relation donnée en paramètre
-        Renvois ''KeyError'' si la relation n'existe pas
+        Renvois 'KeyError' si la relation n'existe pas
 
         :param fro: id du noeud origine
         :type fro: entier
@@ -105,8 +93,8 @@ class SimpleReseauConceptuel(AbcReseauConceptuel) :
         b = a[by]
         try :
             b.remove(to)
-        except ValueError:
-            raise KeyError((fro, by, to))
+        except ValueError as valueError:
+            raise KeyError(str((fro, by, to)) + "not in network") from valueError
         if b == [] :
             a.pop(by)
             if a == {} :
