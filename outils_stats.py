@@ -1,5 +1,7 @@
 '''outils pour faire des stats'''
 
+from collections import Counter
+
 def compte_ngram(ngram, liste):
     """compte les ngram (1 ou plusieurs éléments à la suite) dans une liste
 
@@ -48,6 +50,50 @@ def liste_tout_ngram(liste):
 
 
 def liste_tout_adjacents(liste):
+    """Génère la liste de toutes les adjacences de taille 1 à n
+
+    Args:
+        liste (iter[T]): la liste dans laquelle optenir les adjacences
+
+    Returns:
+        liste[liste[T]]: la liste de liste des adjacences de taille n, puis n-1, puis n-2, ... jusqu'à 1
+    """
     length = len(liste)
 
-    return [[[liste[i3+i2] for i3 in range(length - i)] for i2 in range(i+1)] for i in range(length)]    
+    return  [
+                [
+                    [liste[i3+i2] for i3 in range(length - i)]
+                for i2 in range(i+1)]
+            for i in range(length)]
+
+def set_ngram(liste):
+    """Génère la liste de toutes les adjacences uniques de taille 1 à n
+
+    Args:
+        liste (iter[T]): la liste dans laquelle optenir les adjacences uniques
+
+    Returns:
+        liste[liste[Tuple(T)]]: la liste de liste des adjacences de taille n, puis n-1, puis n-2, ... jusqu'à 1
+    """
+    length = len(liste)
+    return  [
+                set(
+                    tuple(liste[i3+i2] for i3 in range(length - i))
+                for i2 in range(i+1))
+            for i in range(length)]
+
+def count_ngram(liste):
+    """Génère le compte de toutes les adjacences uniques de taille 1 à n
+
+    Args:
+        liste (iter[T]): la liste dans laquelle optenir les adjacences uniques
+
+    Returns:
+        liste[Counter[tuple[T]]]: la liste de compteur des adjacences de taille n, puis n-1, puis n-2, ... jusqu'à 1
+    """
+    length = len(liste)
+    return  [
+                Counter(
+                    tuple(liste[i3+i2] for i3 in range(length - i))
+                for i2 in range(i+1))
+            for i in range(length)]
