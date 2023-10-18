@@ -10,6 +10,10 @@ class AbcReseauConceptuelSimple(ABC):
     En simplifié c'est une liste de triplet (origine, moyen, destination) décrivant les arrêtes entre les noeuds
     (un peu comme RDF mais avec la différence que les moyens (prédicats) sont des noeuds et les relations sont ordonnées au sein de (origine, moyen))
     """
+    @property
+    @abstractmethod
+    def max(self):
+        raise NotImplementedError
 
     @abstractmethod
     def add_relation(self, fro, by, to):
@@ -58,7 +62,12 @@ class SimpleReseauConceptuelSimple(AbcReseauConceptuelSimple):
     """Implémentation simple de la classe abstraite avec des objets standard de python"""
 
     def __init__(self):
-        self.data = dict()
+        self._data = {}
+        self._max = 0
+
+    @property
+    def max(self):
+        return self._max
 
     def add_relation(self, fro, by, to):
         """
@@ -71,11 +80,14 @@ class SimpleReseauConceptuelSimple(AbcReseauConceptuelSimple):
         :param to: id du noeud destination
         :type to: entier
         """
-        a = self.data.get(fro, {by: []})
+
+        self._max = max(self._max, fro, by, to)
+
+        a = self._data.get(fro, {by: []})
         b = a.get(by, [])
         b.append(to)
         a[by] = b
-        self.data[fro] = a
+        self._data[fro] = a
 
     def get_relations_of(self, fro):
         """
@@ -87,7 +99,7 @@ class SimpleReseauConceptuelSimple(AbcReseauConceptuelSimple):
         :return: liste de doublé (moyen, [destinations])
         :rtype: iterable of tuple
         """
-        return [(b[0], b[1].copy()) for b in self.data[fro].items()]
+        return [(b[0], b[1].copy()) for b in self._data[fro].items()]
 
     def remove_first_relation(self, fro, by, to):
         """
@@ -101,7 +113,7 @@ class SimpleReseauConceptuelSimple(AbcReseauConceptuelSimple):
         :param to: id du noeud destination
         :type to: entier
         """
-        a = self.data[fro]
+        a = self._data[fro]
         b = a[by]
         try:
             b.remove(to)
@@ -110,7 +122,7 @@ class SimpleReseauConceptuelSimple(AbcReseauConceptuelSimple):
         if b == []:
             a.pop(by)
             if a == {}:
-                self.data.pop(fro)
+                self._data.pop(fro)
         else:
             a[by] = b
-            self.data[fro] = a
+            self._data[fro] = a
