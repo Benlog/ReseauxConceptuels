@@ -1,9 +1,12 @@
-"""Création et outils d'index"""
+"""Index creation and tools for conceptual networks."""
+from typing import List, Optional
 from bidict import bidict
-from reseauxConceptuelsSimple import SimpleReseauConceptuelSimple as SRCS
+from reseaux_conceptuels_simple import SimpleReseauConceptuelSimple
 
-defaultCaracterList = [chr(i) for i in range(0, 0xFFFF)]
-
+# Constants
+DEFAULT_CHAR_LIST = [chr(i) for i in range(0, 0xFFFF)]
+CONTAINS_ID = 0  # ID for "contains" relationship
+NEXT_ELEM_ID = 1  # ID for "next element" relationship
 
 def create_base_caracter_index(base=None, index_to_caracter_tuple_list=None):
     """
@@ -23,7 +26,8 @@ def create_base_caracter_index(base=None, index_to_caracter_tuple_list=None):
 
     if index_to_caracter_tuple_list is None:
         index_to_caracter_tuple_list = [
-            (i, j) for i, j in enumerate(defaultCaracterList, start=max(id_set)+1)
+            (i, j) for i, j in enumerate(DEFAULT_CHAR_LIST,
+            start=max(id_set)+1)
         ]
 
     base.putall(index_to_caracter_tuple_list)
@@ -58,29 +62,31 @@ def merge_index(index_list):
 #    3 : sujet (element suivant) objet
 
 
-def create_linked_chain_graph(graph, id_list_to_store, contain_id, next_elem_id, first_id = None):
-    """Gènère un graphe de type liste chainer pour stocker les id de id_list_to_store
-
+def create_linked_chain_graph(graph: SimpleReseauConceptuelSimple,
+                            id_list: List[int],
+                            contain_id: int,
+                            next_elem_id: int,
+                            first_id: Optional[int] = None) -> None:
+    """Generate a linked chain graph to store IDs.
+    
     Args:
-        graph (SRCS): réseau conceptuel auquel ajouter la liste chainé
-        contain_id (int): id de l'élément contient
-        next_elem_id (int): id de l'élément élément suivant
-        id_list_to_store (list[int]): liste des id à stocker dans cette liste
-        first_id (int): id du 1er élément de la liste, sera mis à graph.max si vide
+        graph: Conceptual network to add the linked chain
+        id_list: List of IDs to store
+        contain_id: ID of the "contains" relationship
+        next_elem_id: ID of the "next element" relationship 
+        first_id: ID of first element (uses graph.max+1 if None)
     """
     if first_id is None :
         first_id = graph.max + 1
 
     curent_id = first_id
 
-    for elem in id_list_to_store:
+    for elem in id_list:
         graph.add_relation(curent_id, contain_id, elem)
         curent_id += 1
         graph.add_relation(curent_id-1, next_elem_id, curent_id)
 
     return
-
-
 
 
 

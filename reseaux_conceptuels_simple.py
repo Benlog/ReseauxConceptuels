@@ -1,24 +1,26 @@
-"""Module des réseaux conceptuels de base"""
+"""Base module for conceptual networks."""
 from abc import ABC, abstractmethod
+from typing import Dict, List, Tuple
 
 
 class AbcReseauConceptuelSimple(ABC):
+    """Base abstract class for conceptual networks.
+    
+    A conceptual network is a directed graph where edges are labeled by nodes.
+    Relations are stored as (origin, predicate, destination) triples with
+    maintained order within each (origin, predicate) pair.
     """
-    Classe de base abstraite pour les réseaux conceptuels
 
-    Un réseau conceptuel est un réseau dont les arcs sont décrit par un noeud
-    En simplifié c'est une liste de triplet (origine, moyen, destination) décrivant les arrêtes entre les noeuds
-    (un peu comme RDF mais avec la différence que les moyens (prédicats) sont des noeuds et les relations sont ordonnées au sein de (origine, moyen))
-    """
     @property
     @abstractmethod
-    def max(self):
+    def max(self) -> int:
+        """Return the maximum node ID in the network.""" 
         raise NotImplementedError
 
     @abstractmethod
-    def add_relation(self, fro, by, to):
+    def add_relation(self, fro: int, by: int, to: int) -> None:
         """
-        Ajoute une relation au graphe à la fin de l'ordre
+        Add a relation to the graph at the end of the order.
 
         :param fro: id du noeud origine
         :type fro: entier
@@ -30,9 +32,10 @@ class AbcReseauConceptuelSimple(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_relations_of(self, fro):
+    def get_relations_of(self, fro: int) -> List[Tuple[int, List[int]]]:
         """
-        Donne l'ensemble des doublés (moyen, destination) du noeud donné en paramètre
+        Donne l'ensemble des doublés (moyen, destination) du noeud donné en
+        paramètre
         Renvois 'KeyError' si le noeuds oringine n'existe pas
 
         :param fro: id du noeud origine
@@ -43,7 +46,7 @@ class AbcReseauConceptuelSimple(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def remove_first_relation(self, fro, by, to):
+    def remove_first_relation(self, fro: int, by: int, to: int) -> None:
         """
         Retire la dernière relation donnée en paramètre
         Renvois 'KeyError' si la relation n'existe pas
@@ -59,17 +62,18 @@ class AbcReseauConceptuelSimple(ABC):
 
 
 class SimpleReseauConceptuelSimple(AbcReseauConceptuelSimple):
-    """Implémentation simple de la classe abstraite avec des objets standard de python"""
+    """Implémentation simple de la classe abstraite avec des objets standard de
+    python"""
 
     def __init__(self):
-        self._data = {}
-        self._max = 0
+        self._data: Dict[int, Dict[int, List[int]]] = {}
+        self._max: int = 0
 
     @property
-    def max(self):
+    def max(self) -> int:
         return self._max
 
-    def add_relation(self, fro, by, to):
+    def add_relation(self, fro: int, by: int, to: int) -> None:
         """
         Ajoute une relation au graphe à la fin de l'ordre
 
@@ -89,9 +93,10 @@ class SimpleReseauConceptuelSimple(AbcReseauConceptuelSimple):
         a[by] = b
         self._data[fro] = a
 
-    def get_relations_of(self, fro):
+    def get_relations_of(self, fro: int) -> List[Tuple[int, List[int]]]:
         """
-        Donne l'ensemble des doublés (moyen, destination) du noeud donné en paramètre
+        Donne l'ensemble des doublés (moyen, destination) du noeud donné en
+        paramètre
         Renvois 'KeyError' si le noeuds oringine n'existe pas
 
         :param fro: id du noeud origine
@@ -101,7 +106,7 @@ class SimpleReseauConceptuelSimple(AbcReseauConceptuelSimple):
         """
         return [(b[0], b[1].copy()) for b in self._data[fro].items()]
 
-    def remove_first_relation(self, fro, by, to):
+    def remove_first_relation(self, fro: int, by: int, to: int) -> None:
         """
         Retire la dernière relation donnée en paramètre
         Renvois 'KeyError' si la relation n'existe pas
